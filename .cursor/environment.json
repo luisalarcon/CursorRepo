@@ -1,0 +1,11 @@
+{
+  "name": "CursorRepo Task Board",
+  "install": "npm ci",
+  "terminals": [
+    {
+      "name": "server",
+      "command": "npm start"
+    }
+  ],
+  "ports": [3000]
+}
