@@ -20,7 +20,8 @@ const state = {
   viewYear: 0,
   viewMonth: 0,
   selected: null, // YYYY-MM-DD
-  monthEvents: [], // events in the visible month range
+  monthEvents: [], // events in the visible month range (for grid badges)
+  dayEvents: [], // events for the selected day (day panel)
 };
 
 let statusTimer;
@@ -62,7 +63,14 @@ async function loadMonth() {
   const last = ymd(state.viewYear, state.viewMonth, lastDay);
   state.monthEvents = await api(`/events?from=${first}&to=${last}`);
   renderCalendar();
-  if (state.selected) renderDay();
+}
+
+// The day panel is fetched independently of the visible month so it stays
+// correct even when you browse to a different month.
+async function loadDay() {
+  if (!state.selected) return;
+  state.dayEvents = await api(`/events?date=${state.selected}`);
+  renderDay();
 }
 
 function countByDate() {
@@ -130,12 +138,6 @@ function renderCalendar() {
   }
 }
 
-function eventsForSelected() {
-  return state.monthEvents
-    .filter((e) => e.date === state.selected)
-    .sort((a, b) => (a.startTime || "99:99").localeCompare(b.startTime || "99:99"));
-}
-
 function renderDay() {
   const [y, m, d] = state.selected.split("-").map(Number);
   const labelDate = new Date(y, m - 1, d);
@@ -146,7 +148,7 @@ function renderDay() {
     year: "numeric",
   });
 
-  const events = eventsForSelected();
+  const events = state.dayEvents;
   dayEvents.innerHTML = "";
   dayEmpty.classList.toggle("hidden", events.length > 0);
 
@@ -194,7 +196,7 @@ function selectDay(dateStr) {
   state.selected = dateStr;
   resetForm();
   renderCalendar();
-  renderDay();
+  loadDay();
 }
 
 function resetForm() {
@@ -245,7 +247,7 @@ async function onSubmit(event) {
       flash("Event added");
     }
     resetForm();
-    await loadMonth();
+    await Promise.all([loadDay(), loadMonth()]);
   } catch (err) {
     flash(err.message, true);
   }
@@ -256,7 +258,7 @@ async function removeEvent(id) {
     await api(`/events/${id}`, { method: "DELETE" });
     flash("Event deleted");
     resetForm();
-    await loadMonth();
+    await Promise.all([loadDay(), loadMonth()]);
   } catch (err) {
     flash(err.message, true);
   }
@@ -287,4 +289,5 @@ cancelBtn.addEventListener("click", resetForm);
   state.viewMonth = now.getMonth();
   state.selected = todayStr();
   loadMonth();
+  loadDay();
 })();
