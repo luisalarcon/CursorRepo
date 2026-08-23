@@ -2,13 +2,13 @@
 
 const path = require("path");
 const express = require("express");
-const { TaskStore } = require("./store");
+const { EventStore } = require("./store");
 
 /**
- * Build an Express app. A fresh store is created per app instance which keeps
- * tests isolated and the server stateless across restarts.
+ * Build the Calendar Express app. A store can be injected (tests use an
+ * in-memory one); the server passes a file-backed store for persistence.
  */
-function createApp(store = new TaskStore()) {
+function createApp(store = new EventStore()) {
   const app = express();
   app.use(express.json());
 
@@ -18,31 +18,61 @@ function createApp(store = new TaskStore()) {
     res.json({ status: "ok", uptime: process.uptime() });
   });
 
-  api.get("/tasks", (_req, res) => {
-    res.json(store.list());
-  });
-
-  api.post("/tasks", (req, res) => {
+  // List events. Supports ?date=YYYY-MM-DD (single day) or
+  // ?from=YYYY-MM-DD&to=YYYY-MM-DD (range); otherwise returns everything.
+  api.get("/events", (req, res) => {
     try {
-      const task = store.create(req.body && req.body.title);
-      res.status(201).json(task);
+      const { date, from, to } = req.query;
+      if (date) {
+        return res.json(store.listByDay(String(date)));
+      }
+      if (from || to) {
+        if (!from || !to) {
+          return res
+            .status(400)
+            .json({ error: "Both from and to are required for a range query" });
+        }
+        return res.json(store.listByRange(String(from), String(to)));
+      }
+      res.json(store.list());
     } catch (err) {
       res.status(err.statusCode || 500).json({ error: err.message });
     }
   });
 
-  api.patch("/tasks/:id/toggle", (req, res) => {
-    const task = store.toggle(req.params.id);
-    if (!task) {
-      return res.status(404).json({ error: "Task not found" });
+  api.get("/events/:id", (req, res) => {
+    const event = store.get(req.params.id);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found" });
     }
-    res.json(task);
+    res.json(event);
   });
 
-  api.delete("/tasks/:id", (req, res) => {
+  api.post("/events", (req, res) => {
+    try {
+      const event = store.create(req.body || {});
+      res.status(201).json(event);
+    } catch (err) {
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  api.patch("/events/:id", (req, res) => {
+    try {
+      const event = store.update(req.params.id, req.body || {});
+      if (!event) {
+        return res.status(404).json({ error: "Event not found" });
+      }
+      res.json(event);
+    } catch (err) {
+      res.status(err.statusCode || 500).json({ error: err.message });
+    }
+  });
+
+  api.delete("/events/:id", (req, res) => {
     const removed = store.remove(req.params.id);
     if (!removed) {
-      return res.status(404).json({ error: "Task not found" });
+      return res.status(404).json({ error: "Event not found" });
     }
     res.status(204).end();
   });

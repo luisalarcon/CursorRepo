@@ -1,7 +1,7 @@
 {
-  "name": "cursorrepo-taskboard",
+  "name": "cursorrepo-calendar",
   "version": "1.0.0",
-  "description": "A small Task Board web app (Express API + modern frontend) used to demonstrate the Cloud Agent development environment.",
+  "description": "A calendar web app for viewing daily events, with an agent-friendly MCP server so Claude/ChatGPT can view and manage the calendar.",
   "type": "commonjs",
   "engines": {
     "node": ">=20"
@@ -10,11 +10,15 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "mcp": "node src/mcp-server.js",
+    "mcp:http": "node src/mcp-server.js --http",
     "test": "jest --runInBand",
     "lint": "eslint ."
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "express": "^4.19.2",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
