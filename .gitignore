@@ -1,0 +1,6 @@
+node_modules/
+coverage/
+data/
+npm-debug.log*
+.env
+.DS_Store

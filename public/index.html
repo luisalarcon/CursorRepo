@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calendar</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app__header">
+        <div>
+          <h1 class="app__title">Calendar</h1>
+          <p class="app__subtitle">See what you have to do, any day.</p>
+        </div>
+        <span class="app__badge" title="Agents can connect via MCP">MCP-ready</span>
+      </header>
+
+      <section class="layout">
+        <div class="calendar">
+          <div class="calendar__toolbar">
+            <button id="prev" class="icon-btn" aria-label="Previous month">‹</button>
+            <h2 id="month-label" class="calendar__month">—</h2>
+            <button id="next" class="icon-btn" aria-label="Next month">›</button>
+            <button id="today" class="ghost-btn">Today</button>
+          </div>
+          <div class="calendar__weekdays">
+            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
+            <span>Thu</span><span>Fri</span><span>Sat</span>
+          </div>
+          <div id="grid" class="calendar__grid"></div>
+        </div>
+
+        <aside class="day-panel">
+          <h3 id="day-title" class="day-panel__title">Select a day</h3>
+          <ul id="day-events" class="day-events"></ul>
+          <p id="day-empty" class="day-panel__empty">No events on this day yet.</p>
+
+          <form id="event-form" class="event-form" autocomplete="off">
+            <h4 class="event-form__heading">Add an event</h4>
+            <input type="hidden" id="event-id" />
+            <label class="field">
+              <span>Title</span>
+              <input id="f-title" type="text" placeholder="e.g. Dentist appointment" required />
+            </label>
+            <div class="field-row">
+              <label class="field">
+                <span>Start</span>
+                <input id="f-start" type="time" />
+              </label>
+              <label class="field">
+                <span>End</span>
+                <input id="f-end" type="time" />
+              </label>
+            </div>
+            <label class="field">
+              <span>Notes</span>
+              <textarea id="f-desc" rows="2" placeholder="Optional details"></textarea>
+            </label>
+            <div class="event-form__actions">
+              <button type="submit" id="save-btn" class="primary-btn">Add event</button>
+              <button type="button" id="cancel-btn" class="ghost-btn hidden">Cancel</button>
+            </div>
+            <span id="status" class="event-form__status" role="status"></span>
+          </form>
+        </aside>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

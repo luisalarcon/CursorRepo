@@ -1,0 +1,15 @@
+{
+  "name": "CursorRepo Calendar",
+  "install": "npm ci",
+  "terminals": [
+    {
+      "name": "calendar-api",
+      "command": "npm start"
+    },
+    {
+      "name": "mcp-http",
+      "command": "npm run mcp:http"
+    }
+  ],
+  "ports": [3000, 3001]
+}
