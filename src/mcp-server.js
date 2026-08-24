@@ -261,7 +261,9 @@ async function runHttp(port) {
 if (require.main === module) {
   const httpPort = process.env.MCP_HTTP_PORT;
   const useHttp = process.argv.includes("--http") || Boolean(httpPort);
-  const start = useHttp ? runHttp(Number(httpPort) || 3001) : runStdio();
+  // When deployed as its own service (e.g. Railway), honor the injected PORT.
+  const resolvedPort = Number(httpPort) || Number(process.env.PORT) || 3001;
+  const start = useHttp ? runHttp(resolvedPort) : runStdio();
   start.catch((err) => {
     console.error("Fatal MCP server error:", err);
     process.exit(1);

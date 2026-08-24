@@ -93,6 +93,42 @@ Start the HTTP transport and point your connector at the `/mcp` endpoint:
 npm run mcp:http           # serves MCP at http://localhost:3001/mcp
 ```
 
+## Deploy to Railway
+
+This repo ships a `Dockerfile` and `railway.json`, so [Railway](https://railway.com)
+can build and run it directly.
+
+1. Push this repo to GitHub (already done if you're reading this in a PR).
+2. In Railway: **New Project → Deploy from GitHub repo** and pick this repo.
+3. Railway detects `railway.json` and builds the `Dockerfile`. No build/start
+   config is needed — the app binds to the `PORT` Railway injects and the
+   health check hits `/api/health`.
+4. Under the service's **Settings → Networking**, click **Generate Domain** to
+   get a public URL for the calendar.
+
+That's it for the calendar web app + REST API.
+
+### Persist events across deploys
+
+The event store writes to `data/events.json`, and a container's filesystem is
+ephemeral. To keep events across restarts/redeploys, add a **Volume** to the
+service mounted at `/app/data` (the default `DATA_FILE` is
+`/app/data/events.json`). Or set `DATA_FILE` to a path on your mounted volume.
+
+### Expose the MCP server (optional)
+
+The MCP server needs the calendar API to talk to (`CALENDAR_API_URL`). Two options:
+
+- Run it **locally** (stdio) pointed at your deployed URL — nothing extra to
+  deploy. Set `CALENDAR_API_URL=https://<your-app>.up.railway.app` in the
+  Claude Desktop config shown above. Recommended.
+- Deploy it as a **second Railway service** from the same repo: set the service's
+  start command to `npm run mcp:http` and add `CALENDAR_API_URL` pointing at the
+  calendar service (Railway private domain works, e.g.
+  `http://<calendar-service>.railway.internal:<port>`). The MCP HTTP server binds
+  the injected `PORT`. If you expose this publicly, add authentication first — the
+  endpoint is currently unauthenticated.
+
 ## Project layout
 
 ```
